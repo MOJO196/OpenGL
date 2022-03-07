@@ -1,26 +1,76 @@
 #include <iostream>
-#include <glad/glad.h>
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <gl/GL.h>
+#include <sstream>
 
 const char* vertexShaderSource =
 "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 color;\n"
-"out vec3 colorOut;\n"
+"layout (location = 0) in vec2 aPos;\n"
+"layout (location = 1) in vec3 aColor;\n"
+"out vec3 f_color;\n"
 "void main()\n"
 "{\n"
-"	gl_Poistion = vec4(aPos.x, aPos.y, aPos.z 1.0);\n"
-"	colorOut = color;"
-"}\n";
+"	f_color = aColor;\n"
+"   gl_Position = vec4(aPos.x, aPos.y, 1.0, 1.0);\n"
+"}\0";
 
 const char* fragmentShaderSource =
-"version 330 core\n"
-"out vec4 FragColor;"
-"in vec3 color;\n"
+"#version 330 core\n"
+"out vec4 FragColor;\n"
+"in vec3 f_color;\n"
 "void main()\n"
 "{\n"
-"	FragColor = vec4(color, 1.0f);\n"
-"}\n";
+"   FragColor = vec4(f_color, 1.0f);\n"
+"} \0";
+
+static void openGLDebugCallback(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char* message, const void* userParam) {
+
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		// OpenGL_LOG_INFO(message);
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		std::cout << "LOW" << message << "\n";
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		std::cout << "MEDIUM" << message << "\n";
+		break;
+	case GL_DEBUG_SEVERITY_HIGH:
+		std::cout << "HIGH" << message << "\n";
+		break;
+	default:
+		break;
+	}
+}
+
+unsigned int CompileShader(unsigned int type, const std::string& source)
+{
+	unsigned int id = glCreateShader(type);
+	const char* src = source.c_str();
+	glShaderSource(id, 1, &src, nullptr);
+	glCompileShader(id);
+
+	int result;
+	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+
+	if (result == GL_FALSE)
+	{
+		int length;
+		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+		char* message = (char*)alloca(length * sizeof(char));
+		glGetShaderInfoLog(id, length, &length, message);
+		std::stringstream ss;
+		ss << "Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << "shader!";
+		ss << message;
+		std::cout << ss.str().c_str() << "\n";
+		glDeleteShader(id);
+		return 0;
+	}
+
+	return id;
+}
 
 int main()
 {
@@ -33,9 +83,13 @@ int main()
 
 	GLfloat vertices[] =
 	{
-		-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, 1.0f, 0.0f,
-		0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, 0.0f, 1.0f,
-		0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f, 0.0f, 1.0f
+		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
+		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
+		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+
+		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+		-0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Bottom-left
+		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f  // Top-left
 	};
 
 	//define window properties
@@ -50,18 +104,17 @@ int main()
 
 	glfwMakeContextCurrent(window);
 
-	gladLoadGL();
+	glewInit();
+
+	glDebugMessageCallback(openGLDebugCallback, 0);
 
 	//declare the viewport of the window
 	glViewport(0, 0, 1024, 1024);
 
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
 
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
+	GLuint vertexShader = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
+
+	GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
 	GLuint shaderProgram = glCreateProgram();
 
@@ -85,27 +138,23 @@ int main()
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	//create a new color and swap buffers to display it
-	glClearColor(0.05f, 0.15f, 0.15f, 1.0f);
-	//clear back buffer
-	glClear(GL_COLOR_BUFFER_BIT);
-	glfwSwapBuffers(window);
-
 	while (!glfwWindowShouldClose(window))
 	{
-		glClearColor(0.05f, 0.15f, 0.15f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();

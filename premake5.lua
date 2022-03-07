@@ -31,12 +31,13 @@ project "OpenGL"
     links 
     {
         "glfw3",
+        "glew32s",
         "opengl32"
     }
 
     defines
     {
-
+        "GLEW_STATIC"
     }
 
     filter "configurations:Debug" 
