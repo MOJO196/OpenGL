@@ -5,7 +5,9 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <vector>
 
+/*
 
 std::string readFile(const char *filePath) {
     std::string content;
@@ -86,3 +88,5 @@ GLuint LoadShader(const char *vertex_path, const char *fragment_path) {
 
     return program;
 }
+
+*/

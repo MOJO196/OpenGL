@@ -30,8 +30,8 @@ const char* fragmentShaderSource =
 
 int main()
 {
-	GLuint program = LoadShader("shader.vert", "shader.frag");
-	glUseProgram(program);
+	//GLuint program = LoadShader("shader/vertexShaderSource.glsl", "shader/fragmentShaderSource.glsl");
+	//glUseProgram(program);
 
 	glfwInit();
 
@@ -42,13 +42,20 @@ int main()
 
 	GLfloat vertices[] =
 	{
-		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
-		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
-		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+		//-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
+		// 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
+		// 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
 
-		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
-		-0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Bottom-left
-		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f  // Top-left
+		// 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+		//-0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Bottom-left
+		//-0.5f,  0.5f, 1.0f, 0.0f, 0.0f  // Top-left
+
+		-0.5f, -0.5f * float(sqrt(3)) * 1 / 3,     0.8f, 0.3f,  0.02f, // Lower left corner
+		 0.5f, -0.5f * float(sqrt(3)) * 1 / 3,     0.8f, 0.3f,  0.02f, // Lower right corner
+		 0.0f,  0.5f * float(sqrt(3)) * 2 / 3,     1.0f, 0.6f,  0.32f, // Upper corner
+		-0.25f, 0.5f * float(sqrt(3)) * 1 / 6,     0.9f, 0.45f, 0.17f, // Inner left
+		 0.25f, 0.5f * float(sqrt(3)) * 1 / 6,     0.9f, 0.45f, 0.17f, // Inner right
+		 0.0f, -0.5f * float(sqrt(3)) * 1 / 3,     0.0f, 0.0f,  0.0f  // Inner down
 	};
 
 	//define window properties
