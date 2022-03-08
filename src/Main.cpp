@@ -1,65 +1,22 @@
+#include "GLShader.hpp"
+#include "Main.h"
+
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <gl/GL.h>
 #include <sstream>
 
-#include "GLShader.hpp"
-#include "Main.h"
-
-
-const char* vertexShaderSource =
-"#version 330 core\n"
-"layout (location = 0) in vec2 aPos;\n"
-"layout (location = 1) in vec3 aColor;\n"
-"out vec3 f_color;\n"
-"void main()\n"
-"{\n"
-"	f_color = aColor;\n"
-"   gl_Position = vec4(aPos.x, aPos.y, 1.0, 1.0);\n"
-"}\0";
-
-const char* fragmentShaderSource =
-"#version 330 core\n"
-"out vec4 FragColor;\n"
-"in vec3 f_color;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(f_color, 1.0f);\n"
-"}\0";
-
 int main()
 {
-	//GLuint program = LoadShader("shader/vertexShaderSource.glsl", "shader/fragmentShaderSource.glsl");
-	//glUseProgram(program);
-
 	glfwInit();
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	//using the new core profile
+
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLfloat vertices[] =
-	{
-		//-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
-		// 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
-		// 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
-
-		// 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
-		//-0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Bottom-left
-		//-0.5f,  0.5f, 1.0f, 0.0f, 0.0f  // Top-left
-
-		-0.5f, -0.5f * float(sqrt(3)) * 1 / 3,     0.8f, 0.3f,  0.02f, // Lower left corner
-		 0.5f, -0.5f * float(sqrt(3)) * 1 / 3,     0.8f, 0.3f,  0.02f, // Lower right corner
-		 0.0f,  0.5f * float(sqrt(3)) * 2 / 3,     1.0f, 0.6f,  0.32f, // Upper corner
-		-0.25f, 0.5f * float(sqrt(3)) * 1 / 6,     0.9f, 0.45f, 0.17f, // Inner left
-		 0.25f, 0.5f * float(sqrt(3)) * 1 / 6,     0.9f, 0.45f, 0.17f, // Inner right
-		 0.0f, -0.5f * float(sqrt(3)) * 1 / 3,     0.0f, 0.0f,  0.0f  // Inner down
-	};
-
-	//define window properties
-	GLFWwindow* window = glfwCreateWindow(1024, 1024, "Test", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(1024, 1024, "OpenGL Test", NULL, NULL);
 
 	if (window == NULL)
 	{
@@ -74,53 +31,71 @@ int main()
 
 	glDebugMessageCallback(openGLDebugCallback, 0);
 
-	//declare the viewport of the window
 	glViewport(0, 0, 1024, 1024);
 
+	GLuint program = LoadShader("src/shader/vertexShaderSource.glsl", "src/shader/fragmentShaderSource.glsl");
+	glUseProgram(program);
 
-	GLuint vertexShader = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
+	GLfloat vertices[] =
+	{
+		//-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
+		// 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
+		// 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
 
-	GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+		// 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+		//-0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Bottom-left
+		//-0.5f,  0.5f, 1.0f, 0.0f, 0.0f  // Top-left
 
-	GLuint shaderProgram = glCreateProgram();
+		-0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.0f, 0.0f, 0.0f, // Lower left corner
+		 0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.0f, 0.0f, 0.0f, // Lower right corner
+		 0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f,     1.0f, 1.0f, 1.0f, // Upper corner
+		-0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.0f, 0.0f, 1.0f, // Inner left
+		 0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.0f, 1.0f, 0.0f, // Inner right
+		 0.0f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     1.0f, 0.0f, 0.0f  // Inner down
+	};
 
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
+	GLuint indices[] =
+	{
+		0, 3, 5, // Lower left triangle
+		3, 2, 4, // Lower right triangle
+		5, 4, 1, // Upper triangle
+		3, 4, 5
+	};
 
-	glLinkProgram(shaderProgram);
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	GLuint VAO, VBO;
+	GLuint VAO, VBO, EBO;
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
 
+	// Make the VAO the current Vertex Array Object by binding it
 	glBindVertexArray(VAO);
 
-	glGenBuffers(1, &VBO);
+	// Bind the VBO specifying it's a GL_ARRAY_BUFFER
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	// Bind the EBO specifying it's a GL_ELEMENT_ARRAY_BUFFER
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	while (!glfwWindowShouldClose(window))
 	{
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glUseProgram(shaderProgram);
+		glUseProgram(program);
 		glBindVertexArray(VAO);
 
-
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(GLuint), GL_UNSIGNED_INT, 0);
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();
@@ -128,7 +103,9 @@ int main()
 
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteProgram(shaderProgram);
+	glDeleteBuffers(1, &EBO);
+
+	glDeleteProgram(program);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
