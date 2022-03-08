@@ -4,6 +4,10 @@
 #include <gl/GL.h>
 #include <sstream>
 
+#include "GLShader.hpp"
+#include "Main.h"
+
+
 const char* vertexShaderSource =
 "#version 330 core\n"
 "layout (location = 0) in vec2 aPos;\n"
@@ -22,58 +26,13 @@ const char* fragmentShaderSource =
 "void main()\n"
 "{\n"
 "   FragColor = vec4(f_color, 1.0f);\n"
-"} \0";
-
-static void openGLDebugCallback(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char* message, const void* userParam) {
-
-	switch (severity)
-	{
-	case GL_DEBUG_SEVERITY_NOTIFICATION:
-		// OpenGL_LOG_INFO(message);
-		break;
-	case GL_DEBUG_SEVERITY_LOW:
-		std::cout << "LOW" << message << "\n";
-		break;
-	case GL_DEBUG_SEVERITY_MEDIUM:
-		std::cout << "MEDIUM" << message << "\n";
-		break;
-	case GL_DEBUG_SEVERITY_HIGH:
-		std::cout << "HIGH" << message << "\n";
-		break;
-	default:
-		break;
-	}
-}
-
-unsigned int CompileShader(unsigned int type, const std::string& source)
-{
-	unsigned int id = glCreateShader(type);
-	const char* src = source.c_str();
-	glShaderSource(id, 1, &src, nullptr);
-	glCompileShader(id);
-
-	int result;
-	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-
-	if (result == GL_FALSE)
-	{
-		int length;
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-		char* message = (char*)alloca(length * sizeof(char));
-		glGetShaderInfoLog(id, length, &length, message);
-		std::stringstream ss;
-		ss << "Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << "shader!";
-		ss << message;
-		std::cout << ss.str().c_str() << "\n";
-		glDeleteShader(id);
-		return 0;
-	}
-
-	return id;
-}
+"}\0";
 
 int main()
 {
+	GLuint program = LoadShader("shader.vert", "shader.frag");
+	glUseProgram(program);
+
 	glfwInit();
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -167,4 +126,52 @@ int main()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
+}
+
+static void openGLDebugCallback(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char* message, const void* userParam) {
+
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		// OpenGL_LOG_INFO(message);
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		std::cout << "LOW" << message << "\n";
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		std::cout << "MEDIUM" << message << "\n";
+		break;
+	case GL_DEBUG_SEVERITY_HIGH:
+		std::cout << "HIGH" << message << "\n";
+		break;
+	default:
+		break;
+	}
+}
+
+unsigned int CompileShader(unsigned int type, const std::string& source)
+{
+	unsigned int id = glCreateShader(type);
+	const char* src = source.c_str();
+	glShaderSource(id, 1, &src, nullptr);
+	glCompileShader(id);
+
+	int result;
+	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+
+	if (result == GL_FALSE)
+	{
+		int length;
+		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+		char* message = (char*)alloca(length * sizeof(char));
+		glGetShaderInfoLog(id, length, &length, message);
+		std::stringstream ss;
+		ss << "Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << "shader!";
+		ss << message;
+		std::cout << ss.str().c_str() << "\n";
+		glDeleteShader(id);
+		return 0;
+	}
+
+	return id;
 }
