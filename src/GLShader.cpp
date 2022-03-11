@@ -1,10 +1,13 @@
-#include "GLShader.hpp"
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <algorithm>
 #include <vector>
+
+#include <GL/glew.h>
+
+#include "GLShader.h"
 
 std::string readFile(const char* filePath)
 {

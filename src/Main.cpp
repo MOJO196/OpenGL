@@ -1,11 +1,15 @@
-#include "GLShader.hpp"
-#include "Main.h"
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <chrono>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <gl/GL.h>
-#include <sstream>
-#include <chrono>
+
+#include "GLShader.h"
+#include "Main.h"
 
 int main()
 {
