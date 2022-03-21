@@ -40,7 +40,10 @@ int main()
 	GLuint program = LoadShader("src/shader/vertexShaderSource.glsl", "src/shader/fragmentShaderSource.glsl");
 	glUseProgram(program);
 
-	GLfloat vertices[] =
+	std::vector<GLfloat> vertices;
+	std::vector<GLuint> indices;
+
+	vertices =
 	{
 		//-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
 		// 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
@@ -58,13 +61,39 @@ int main()
 		 0.0f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     1.0f, 0.0f, 0.0f, // Inner down
 	};
 
-	GLuint indices[] =
+	indices =
 	{
 		0, 3, 5, // Lower left triangle
 		3, 2, 4, // Lower right triangle
 		5, 4, 1, // Upper triangle
 		3, 4, 5, // Mid triangle
 	};
+
+	//GLfloat vertices[] =
+	//{
+	//	//-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
+	//	// 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
+	//	// 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+
+	//	// 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+	//	//-0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Bottom-left
+	//	//-0.5f,  0.5f, 1.0f, 0.0f, 0.0f  // Top-left
+
+	//	-0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.0f, 0.0f, 0.0f, // Lower left corner
+	//	 0.5f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     0.0f, 0.0f, 0.0f, // Lower right corner
+	//	 0.0f,  0.5f * float(sqrt(3)) * 2 / 3, 0.0f,     1.0f, 1.0f, 1.0f, // Upper corner
+	//	-0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.0f, 0.0f, 1.0f, // Inner left
+	//	 0.25f, 0.5f * float(sqrt(3)) * 1 / 6, 0.0f,     0.0f, 1.0f, 0.0f, // Inner right
+	//	 0.0f, -0.5f * float(sqrt(3)) * 1 / 3, 0.0f,     1.0f, 0.0f, 0.0f, // Inner down
+	//};
+
+	//GLuint indices[] =
+	//{
+	//	0, 3, 5, // Lower left triangle
+	//	3, 2, 4, // Lower right triangle
+	//	5, 4, 1, // Upper triangle
+	//	3, 4, 5, // Mid triangle
+	//};
 
 	GLuint VAO, VBO, EBO;
 
@@ -77,11 +106,11 @@ int main()
 
 	// Bind the VBO specifying it's a GL_ARRAY_BUFFER
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
 	// Bind the EBO specifying it's a GL_ELEMENT_ARRAY_BUFFER
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices.size(), indices.data(), GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
